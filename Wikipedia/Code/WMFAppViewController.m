@@ -243,6 +243,11 @@ NSString *const WMFLanguageVariantAlertsLibraryVersion = @"WMFLanguageVariantAle
                                              selector:@selector(showErrorBanner:)
                                                  name:NSNotification.showErrorBanner
                                                object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleOpenPlacesNotification:)
+                                                 name:@"OpenPlacesNotification"
+                                               object:nil];
 
     [self setupReadingListsHelpers];
     self.editHintController = [[WMFEditHintController alloc] init];
@@ -1587,6 +1592,17 @@ static NSString *const WMFDidShowOnboarding = @"DidShowOnboarding5.3";
     [self setSelectedIndex:WMFAppTabTypePlaces];
     [self.navigationController popToRootViewControllerAnimated:NO];
     [[self placesViewController] showNearbyArticles];
+}
+
+- (void)handleOpenPlacesNotification:(NSNotification *)notification {
+    NSString *latitude = notification.userInfo[@"latitude"];
+    NSString *longitude = notification.userInfo[@"longitude"];
+    double latValue = [latitude doubleValue];
+    double lonValue = [longitude doubleValue];
+    [self dismissPresentedViewControllers];
+    [self setSelectedIndex:WMFAppTabTypePlaces];
+    [self.navigationController popToRootViewControllerAnimated:NO];
+    [[self placesViewController] goToPaceWithLatitude:latValue longitude:lonValue];
 }
 
 #pragma mark - App config

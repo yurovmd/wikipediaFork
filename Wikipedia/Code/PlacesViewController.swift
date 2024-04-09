@@ -443,6 +443,23 @@ class PlacesViewController: ViewController, UISearchBarDelegate, ArticlePopoverV
         return coordinates.wmf_boundingRegion(with: 0.25 * initialRegion.width)
     }
     
+    // MARK: - Teleport
+    
+    @objc
+    func goToPace(latitude: Double, longitude: Double) {
+        let coordinate = CLLocationCoordinate2D(
+            latitude: latitude,
+            longitude: longitude
+        )
+        let regionRadius: CLLocationDistance = 1000
+        let region = MKCoordinateRegion(
+            center: coordinate,
+            latitudinalMeters: regionRadius,
+            longitudinalMeters: regionRadius
+        )
+        mapView.setRegion(region, animated: true)
+    }
+    
     // MARK: - Searching
     
     var currentSearch: PlaceSearch? {

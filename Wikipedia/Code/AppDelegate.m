@@ -158,6 +158,27 @@ static NSString *const WMFBackgroundDatabaseHousekeeperTaskIdentifier = @"org.wi
 - (BOOL)application:(UIApplication *)app
             openURL:(NSURL *)url
             options:(NSDictionary<NSString *, id> *)options {
+    if ([[url scheme] isEqualToString:@"wikipedia"]) {
+        NSString *host = [url host];
+        if ([host isEqualToString:@"location"]) {
+            NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:YES];
+            NSArray<NSURLQueryItem *> *queryItems = [components queryItems];
+            NSString *latitude;
+            NSString *longitude;
+            for (NSURLQueryItem *item in queryItems) {
+                if ([item.name isEqualToString:@"latitude"]) {
+                    latitude = item.value;
+                } else if ([item.name isEqualToString:@"longitude"]) {
+                    longitude = item.value;
+                }
+            }
+            
+            if (latitude && longitude) {
+                [self openPlacesTabWithLatitude:latitude longitude:longitude];
+                return YES;
+            }
+        }
+    }
     NSUserActivity *activity = [NSUserActivity wmf_activityForWikipediaScheme:url] ?: [NSUserActivity wmf_activityForURL:url];
     if (activity) {
         [self.appViewController showSplashView];
@@ -175,6 +196,14 @@ static NSString *const WMFBackgroundDatabaseHousekeeperTaskIdentifier = @"org.wi
         [self resumeAppIfNecessary];
         return NO;
     }
+}
+
+- (void)openPlacesTabWithLatitude:(NSString *)latitude longitude:(NSString *)longitude {
+    NSDictionary *userInfo = @{
+        @"latitude": latitude,
+        @"longitude": longitude
+    };
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"OpenPlacesNotification" object:nil userInfo:userInfo];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
